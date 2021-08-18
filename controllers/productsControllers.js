@@ -12,24 +12,13 @@ module.exports.allActiveProducts = (req, res) => {
 
 //user
 module.exports.oneActiveProduct = (req, res) => {
-    if(req.body.name){
-        Product.findOne({ _id: req.params.productId }, (err, foundProduct)=> {
-            if(foundProduct.name === req.body.name){
-                if(err){
-                    console.log(err);
-                } else 
-                if(foundProduct && foundProduct.isActive){
-                    res.send(foundProduct);
-                } else {
-                    res.send(`Sorry, ${req.body.name} is not available.`);
-                }
-            } else {
-                res.send(`${req.body.name} does not match with productId!`)
-            }
-        })
-    } else {
-        res.send(`All fields are required!`)
-    };
+    Product.findOne({ _id: req.params.productId }, (err, foundProduct)=> { 
+        if(foundProduct && foundProduct.isActive){
+            res.send(foundProduct);
+        } else {
+            res.send(`Sorry, product is not available.`);
+        }
+    })
 };
 
 //admin
@@ -44,17 +33,13 @@ module.exports.allProducts = (req, res) => {
 
 //admin
 module.exports.oneProduct = (req, res) => {
-    if(req.body.name){
-        Product.findOne({ _id: req.params.productId },(err, foundProduct) =>{
-            if(foundProduct.name === req.body.name){
-                res.send(foundProduct)
-            } else {
-                res.send(`${req.body.name} does not match with productId!`);
-            }
-        })
-    } else {
-        res.send(`All fields are required!`);
-    }
+    Product.findOne({ _id: req.params.productId },(err, foundProduct) =>{
+        if(foundProduct){
+            res.send(foundProduct);
+        } else {
+            res.send(`Sorry, product is not available.`);
+        }
+    }) 
 };
 
 //admin
