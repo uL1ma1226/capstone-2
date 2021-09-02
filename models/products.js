@@ -12,16 +12,7 @@ const productSchema = new Schema({
     createdOn: {
         type: Date,
         default: new Date()
-    },
-    orderedUser: [
-        {
-            userId: String,
-            orderedOn: {
-                type: Date,
-                default: new Date()
-            }
-        }
-    ]
+    }
 });
 
 const Product = mongoose.model('Product', productSchema);

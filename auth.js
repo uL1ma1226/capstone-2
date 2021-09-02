@@ -17,14 +17,15 @@ module.exports.verifyToken = (req, res, next) => {
         accessToken = accessToken.slice(7)
         jwt.verify(accessToken, secret, (err, decoded) =>{
             if(err){
-                res.send(`Authentication process failed! Token is invalid!`);
+                res.send(false);
             } else {
                 req.decodedUser = decoded;
                 next();
             }
         })
     } else {
-        res.send(`Access token missing!`);
+        console.log('accessToken');
+        res.send(false);
     }
 };
 
@@ -32,6 +33,6 @@ module.exports.verifyIsAdmin = (req, res, next) => {
     if(req.decodedUser.isAdmin){
         next()
     } else {
-        res.send(`403 Forbidden! Admin access only`)
+        res.send(false)
     }
 }

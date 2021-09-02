@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Product = require('./products');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -6,7 +7,6 @@ const userSchema = new Schema({
     lastName: String,
     email: String, 
     password: String,
-    address: String,
     isAdmin: {
         type: Boolean,
         default: false
@@ -27,19 +27,7 @@ const userSchema = new Schema({
             }
         }
     ],
-    orders: [
-        {
-            orderId: String,
-            orderedOn: {
-                type: Date,
-                default: new Date()
-            },
-            status: {
-                type: String,
-                default: "Ordered"
-            }
-        }
-    ]
+    orders: []
 })
 
 const User = mongoose.model('User', userSchema);

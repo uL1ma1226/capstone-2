@@ -3,38 +3,30 @@ const Product = require("../models/products");
 const Order = require("../models/order")
 const bcrypt = require("bcrypt");
 const { createAccessToken } = require('../auth');
+const { updateProduct } = require("./productsControllers");
 
 module.exports.registerUser = (req, res) => {
     let hashedPassword = bcrypt.hashSync(req.body.password, 10);
-    if(req.body.email && req.body.firstName && req.body.lastName && req.body.password && req.body.confirmPassword && req.body.address) {
-        if(req.body.password === req.body.confirmPassword){
-            User.findOne({email: req.body.email}, (err,foundUser) => {
-                if(foundUser){
-                    res.send(`${req.body.email} already exists!`);
-                } else {
-                    let newUser = new User({
-                        firstName: req.body.firstName,
-                        lastName: req.body.lastName,
-                        address: req.body.address,
-                        email: req.body.email,
-                        password: hashedPassword
-                    });
+        User.findOne({email: req.body.email}, (err,foundUser) => {
+            if(foundUser){
+                res.send(false);
+            } else {
+                let newUser = new User({
+                    firstName: req.body.firstName,
+                    lastName: req.body.lastName,
+                    email: req.body.email,
+                    password: hashedPassword
+                });
 
-                    newUser.save()
-                    .then(registeredUser => {
-                        res.send(`Successfully Registered! Welcome to our store, ${req.body.firstName}!`)
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    })
-                }
-            })
-        } else{
-            res.send(`Password does not match!`);
-        }
-    } else {
-        res.send(`All fields are required!`);
-    }
+                newUser.save()
+                .then(registeredUser => {
+                    res.send(true)
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+            }
+        })
 }
 
 module.exports.loginUser = (req, res) => {
@@ -48,11 +40,11 @@ module.exports.loginUser = (req, res) => {
                     if(passwordIsCorrect){
                         res.send({accessToken: createAccessToken(foundUser)});
                     } else {
-                        res.send("Credentials are incorrect!");
+                        res.send(false);
                     }
                 }
             } else {
-                res.send(`${req.body.email} does not exist!`);
+                res.send(false);
             }
         }
     })
@@ -69,7 +61,6 @@ module.exports.userDetails = (req, res) => {
 }
 
 module.exports.updateUser = (req, res) => {
-    if(req.body.firstName && req.body.lastName){
         let updates = {
             firstName: req.body.firstName,
             lastName: req.body.lastName
@@ -81,24 +72,7 @@ module.exports.updateUser = (req, res) => {
                 res.send(updatedUser)
             }
         })
-    } else {
-        res.send(`All fields are required!`);
-    }
 }
-
-module.exports.updateUserAddress = (req, res) => {
-    if(req.body.address){
-        User.findByIdAndUpdate({_id: req.decodedUser.id}, {$set:{address: req.body.address}}, {new:true}, (err, updatedAddress)=>{
-            if(err){
-                console.log(err);
-            }else{
-                res.send(updatedAddress)
-            }
-        })
-    }else{
-        res.send(`All fields are required!`);
-    }
-};
 
 module.exports.changePassword = (req, res) => {
     User.findOne({_id: req.decodedUser.id}, (err, foundUser) => {
@@ -128,48 +102,24 @@ module.exports.changePassword = (req, res) => {
 };
 
 module.exports.userCheckout = (req, res) => {
-    if(req.body.productId){
+    User.findById({_id: req.decodedUser.id}, (err, foundUser) => {
         Product.findById({_id: req.body.productId}, (err, foundProduct) => {
-            if(foundProduct && foundProduct.isActive){
-                User.findOne({_id: req.decodedUser.id})
-                .then(foundUser => {
-                    let cart = foundUser.userCart.findIndex(cart => cart.productId == req.body.productId);
-                    console.log(cart);
-                    if(cart == -1){
-                        foundUser.userCart.push({productId: req.body.productId, productName: foundProduct.name, quantity: Math.abs(cart), subtotal: foundProduct.price})
-                        foundUser.save()
-                        .then(result => {
-                            console.log(result);
-                            res.send(`${foundProduct.name} added to cart`)
-                        }).catch(err => {
-                            console.log(err);
-                        })
-                    } else {
-                        foundUser.userCart[cart].quantity += 1;
-                        foundUser.userCart[cart].subtotal = foundProduct.price * foundUser.userCart[cart].quantity;
-                        foundUser.save()
-                        .then(result => {
-                            console.log(result);
-                            res.send(`Another ${foundProduct.name} added to cart`)
-                        }).catch(err => {
-                            console.log(err);
-                        })
-                    }
-                    // res.send(`Added to Cart!`)
-                })
+            if(foundUser.userCart.length < 1){
+                foundUser.userCart.push({productId: req.body.productId, productName: foundProduct.name, quantity: req.body.quantity , subtotal: req.body.subtotal })
+                foundUser.save((err, savedUser) => err ? console.log(err) : res.send(foundUser)) 
             } else {
-                res.send(`Sorry, product is not available.`);
+                (foundUser.userCart.quantity = req.body.quantity);
+                foundUser.userCart.subtotal = req.body.subtotal;
+                foundUser.save((err, savedUser) => err ? console.log(err) : res.send(foundUser.userCart));
             }
         })
-    } else {
-        res.send(`All fields required!`)
-    }
+    })
 }
 
 module.exports.checkCart = (req, res) => {
     User.findOne({_id: req.decodedUser.id}, (err, foundUser) =>{
         if(foundUser){
-            res.send(foundUser);
+            res.send(foundUser.userCart);
         } else {
             console.log(err);
         }
@@ -182,10 +132,10 @@ module.exports.makeAdmin = (req, res) => {
             if(err){
                 console.log(err);
             } else {
-                res.send(`${updatedAdminUser.name} is now an admin`)
+                res.send(true)
             }
         })
     }
 }
 
-module.exports.deactivateUser = (req, res) => User.findByIdAndDelete({ _id: req.decodedUser.id}, (err, deletedUser) => (err) ? console.log(err) : res.send(`User with the following details has been deleted: ${deletedUser}`));
+module.exports.deactivateUser = (req, res) => User.findByIdAndDelete({ _id: req.decodedUser.id}, (err, deletedUser) => (err) ? console.log(err) : res.send(true));

@@ -2,12 +2,13 @@ const Product = require("../models/products");
 
 //user 
 module.exports.allActiveProducts = (req, res) => {
-    Product.find({ isActive: true})
-    .then(foundProduct => {
-        res.send(foundProduct);
-    }).catch(err => {
-        console.log(err);
-    });
+    Product.find({ isActive: true}, (err, foundProduct) =>{
+        if(foundProduct){
+            res.send(foundProduct)
+        }else{
+            console.log(err);
+        }
+    })
 };
 
 //user
@@ -16,7 +17,7 @@ module.exports.oneActiveProduct = (req, res) => {
         if(foundProduct && foundProduct.isActive){
             res.send(foundProduct);
         } else {
-            res.send(`Sorry, product is not available.`);
+            res.send(false);
         }
     })
 };
@@ -37,17 +38,16 @@ module.exports.oneProduct = (req, res) => {
         if(foundProduct){
             res.send(foundProduct);
         } else {
-            res.send(`Sorry, product is not available.`);
+            res.send(false);
         }
     }) 
 };
 
 //admin
 module.exports.createProduct = (req, res) => {
-    if(req.body.name && req.body.description && req.body.price){
         Product.findOne({ name: req.body.name }, (err, foundProduct) => {
             if(foundProduct){
-                res.send(`Product ${req.body.name} already exists!`)
+                res.send(false)
             } else {
                 let newProduct = new Product({
                     name: req.body.name,
@@ -57,32 +57,29 @@ module.exports.createProduct = (req, res) => {
 
                 newProduct.save()
                 .then(addedProduct => {
-                    res.send(`${req.body.name} successfully added to products.`)
+                    res.send(addedProduct)
                 }).catch(err => {
                     console.log(err);
                 })
             }
         })
-    }
 }
 
 //admin
 module.exports.updateProduct = (req, res) => {
-    if(req.body) {
+    console.log(req.body)
         Product.findByIdAndUpdate({_id: req.params.productId}, {$set: req.body}, {new:true}, (err, updatedProduct) => {
             if(err){
                 console.log(err);
             } else {
+                console.log(updatedProduct);
                 res.send(updatedProduct);
             }
         })
-    } else {
-        res.send(`All fields are required!`);
-    }
 };
 
 //admin
-module.exports.storeProduct = (req, res) => Product.findByIdAndUpdate({_id: req.params.productId}, {$set: {isActive: true}}, { new:true }, (err, storedProduct) => (err) ? console.log(err) : res.send(`Product with the following details has been stored: ${storedProduct}`));
+module.exports.storeProduct = (req, res) => Product.findByIdAndUpdate({_id: req.params.productId}, {$set: { isActive: true }}, { new:true }, (err, storedProduct) => (err) ? console.log(err) : res.send(true));
 
 //admin
-module.exports.archiveProduct = (req, res) => Product.findByIdAndUpdate({ _id: req.params.productId }, { $set: { isActive: false } }, { new: true }, (err, archivedProduct) => (err) ? console.log(err) : res.send(`Product with the following details has been archived: ${archivedProduct}`));
+module.exports.archiveProduct = (req, res) => Product.findByIdAndUpdate({ _id: req.params.productId }, { $set: { isActive: false } }, { new: true }, (err, archivedProduct) => (err) ? console.log(err) : res.send(true));
