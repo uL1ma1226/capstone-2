@@ -9,7 +9,7 @@ router.get("/", verifyToken, userDetails); //userdetails
 router.put("/", verifyToken, updateUser); //updateuserdetails
 router.put("/change-password", verifyToken, changePassword)
 router.post("/addToCart", verifyToken, userCheckout)
-// router.delete("/emptyCart", verifyToken, emptyCart)
+router.delete("/emptyCart", verifyToken, emptyCart)
 router.get("/checkCart",verifyToken, checkCart)
 router.put("/makeAdmin", verifyToken, verifyIsAdmin, makeAdmin)
 router.delete("/deactivate", verifyToken, deactivateUser)
