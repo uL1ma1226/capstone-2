@@ -23,7 +23,11 @@ db.on('error', console.error.bind(console, "Connection Error!"));
 db.once('open', () => console.log("We are connected to our Cloud Database"));
 
 app.use(cors({
-    origin: 'https://gforce-project.vercel.app'
+    credentials: true,
+    origin: "*",
+    preflightContinue: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    optionsSuccessStatus: 200,
 }));
 
 app.use(express.json());
