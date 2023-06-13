@@ -22,7 +22,9 @@ let db = mongoose.connection;
 db.on('error', console.error.bind(console, "Connection Error!"));
 db.once('open', () => console.log("We are connected to our Cloud Database"));
 
-app.use(cors())
+app.use(cors({
+    origin: 'https://gforce-project.vercel.app'
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
