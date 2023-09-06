@@ -24,7 +24,7 @@ db.once('open', () => console.log("We are connected to our Cloud Database"));
 
 app.use(cors({
     credentials: true,
-    origin: "*",
+    origin: [ process.env.CORS_ORIGIN_1, process.env.CORS_ORIGIN_2 ],
     preflightContinue: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     optionsSuccessStatus: 200,
